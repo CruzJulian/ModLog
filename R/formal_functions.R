@@ -1,4 +1,4 @@
-data_frame_wff <- function(a, id = runif(1), TERM = 0, by = 0){
+data_frame_wff <- function(a, id = runif(1), TERM = 1, by = 0){
 
   "if"(!is_well_formed(a), stop(Error.3))
 
@@ -85,7 +85,7 @@ build_f4 <- function(a.f4 = NULL, base = NULL, unary = NULL, binary = NULL, bran
   .
 }
 
-extract.data <- function(list.f4, data) lapply(list.f4, function(y) attr(y, "data")[[data]])
+extract.data <- function(list.f4, data) "if"("list" %in% class(list.f4), lapply(list.f4, function(y) attr(y, "data")[[data]]), attr(list.f4, "data")[[data]])
 
 rbind_f4 <- function(list.f4){
 
@@ -100,7 +100,7 @@ rbind_f4 <- function(list.f4){
 }
 
 
-"[.ModLogDF" <- function(a.f4, i, j = NULL){
+select <- function(a.f4, i, j = NULL){
 
   if(is.null(j)){
     base <- extract.data(a.f4, "base")
@@ -109,11 +109,12 @@ rbind_f4 <- function(list.f4){
     branches <- extract.data(a.f4, "branches")
     worlds <- extract.data(a.f4, "worlds")
 
-    base <- "[.data.frame"(base, i , empty)
-    unary <- "[.data.frame"(unary, i , empty)
-    binary <- "[.data.frame"(binary, i , empty)
-    branches <- "[.data.frame"(branches, i , empty)
-    worlds <- "[.data.frame"(world, i , empty)
+    base <- base[i,]
+    unary <- unary[i, ]
+    binary <- binary[i, ]
+    branches <- branches[i, ]
+    worlds <- worlds[i, ]
+
     build_f4(base = base, unary = unary, binary = binary, branches = branches, worlds = worlds)
   } else {
     "[.data.frame"(a.f4, i , j)
@@ -122,11 +123,51 @@ rbind_f4 <- function(list.f4){
 
 alpha <- function(a.f4, i, k){
 
-  ps <- characters(a.f4[i, "name"], k)
-  id <- a.f4[i, "id"]
-  attr(a.f4, "data")[["binary"]][i, ps] <- 1
+  sub_table <- select(a.f4, i)
+  name <- select(a.f4, i, "name")
+  id <- select(a.f4, i, "id")
 
-  forms <- lapply(cut_formula(a.f4[i, "name"], k), data_frame_wff, by = id)
+  ps <- characters(name, k)
+  attr(a.f4, "data")[["binary"]][i, ps] <- 1
+  attr(a.f4, "data")[["base"]][i, "TERM"] <- 0
+
+  extract.data(sub_table, "branches") -> branches
+  extract.data(sub_table, "worlds") -> worlds
+
+  forms <- lapply(cut_formula(name, k), data_frame_wff, by = id)
+  forms <- lapply(forms, build_f4, branches = branches, worlds = worlds)
   rbind_f4(c(list(a.f4), forms))
+}
+
+beta <- function(a.f4, i, k){
+
+  sub_table <- select(a.f4, i)
+  name <- select(a.f4, i, "name")
+  id <- select(a.f4, i, "id")
+
+  ps <- characters(name, k)
+  attr(a.f4, "data")[["binary"]][i, ps] <- 1
+  attr(a.f4, "data")[["base"]][i, "TERM"] <- 0
+
+  extract.data(sub_table, "branches") -> branches
+  extract.data(sub_table, "worlds") -> worlds
+
+  new_branches <- beta_branches(
+    extract.data(a.f4, "branches"),
+    branches
+  )
+
+  forms <- lapply(cut_formula(name, k), data_frame_wff, by = id)
+  forms <- lapply(forms, build_f4, branches = branches, worlds = worlds)
+  forms <- rbind_f4(c(list(a.f4), forms))
+  build_f4(forms, branches = new_branches)
+}
+
+
+beta_branches <- function(branches_all, new_rows){
+  cbind(
+    rbind(branches_all, new_rows, new_rows*0),
+    rbind(branches_all, new_rows*0, new_rows)
+  )
 }
 
