@@ -1,8 +1,6 @@
 
 ## SET SOME CONSTANTS FOR THE LOGICAL LANGUAGE
 
-empty <- quote(expr=)
-
 
 f1 <- "formula1"
 f2 <- "formula2"
