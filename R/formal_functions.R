@@ -154,7 +154,7 @@ beta <- function(a.f4, i, k){
 
   new_branches <- beta_branches(
     extract.data(a.f4, "branches"),
-    branches
+    i
   )
 
   forms <- lapply(cut_formula(name, k), data_frame_wff, by = id)
@@ -163,11 +163,21 @@ beta <- function(a.f4, i, k){
   build_f4(forms, branches = new_branches)
 }
 
+beta_branches <- function(branches, i){
 
-beta_branches <- function(branches_all, new_rows){
-  cbind(
-    rbind(branches_all, new_rows, new_rows*0),
-    rbind(branches_all, new_rows*0, new_rows)
+  df0 <- branches[which(branches[i,] == 0)]
+  df1 <- branches[which(branches[i,] == 1)]
+  df0i <- df0[i,]
+  df1i <- df1[i,]
+
+  brandf0 <- data.frame(df0, df1, df1)
+  brandfi0 <- setNames(data.frame(df0i, df1i, 0*df1i), names(brandf0))
+  brandfi1 <- setNames(data.frame(df0i, 0*df1i, df1i), names(brandf0))
+
+  rbind(
+    brandf0,
+    brandfi0,
+    brandfi1
   )
 }
 
