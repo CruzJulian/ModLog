@@ -1,22 +1,17 @@
 ### FUNCTIONS FOR EVALUATE IS_WFF
 
-put_parentheses <- function(a){
-
-  ret <- gsub(" ", "", a)#nomegusta
-  #    open <- open_parentheses[1]
-  #    close <- close_parentheses[1]
-  #
-  #    for(i in 1:length(LETTERS)){
-  #      ret <- gsub(LETTERS[i], paste(open, LETTERS[i], close, sep = ""), ret)
-  #    }
-  ret
-}
-
 characters <- function(a, k = NULL){
 
   chars <- c(LETTERS, parentheses, unary_symbols, binary_symbols)
-  temp <- put_parentheses(a)
+
+  temp <- gsub(" ", "", a)
+
+  "for"(i, 1:length(symbols_$symbols), gsub(symbols_$symbols[i], symbols_$numeric[i], temp, fixed = TRUE) -> temp)
+
   temp <- substring(temp, 1:nchar(temp), 1:nchar(temp))
+
+  temp[temp %in% symbols_$numeric] <- symbols_$symbols[as.numeric(temp[temp %in% symbols_$numeric])]
+
   if(any(!temp %in% chars)) stop(Error.1)
   c(" ", temp, " ") -> ret
   "if"(is.null(k), ret, ret[k]) -> ret
@@ -103,6 +98,13 @@ is_a_good_walk <- function(a.f2){
 
 }
 
+is_term <- function(a){
+
+  "if"(!is_well_formed(a), stop(Error.3))
+  temp <- characters(a)
+  !any(!(types(temp) %in% c(1,6,7)))
+
+}
 
 is_well_formed<-function(a){
   a <- types(a)
