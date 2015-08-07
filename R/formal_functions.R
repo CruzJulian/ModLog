@@ -25,11 +25,13 @@ data_frame_wff <- function(a, id = runif(1), TERM = 1, by = 0){
 
   data.frame(
     branche.1 = 1
-  ) -> branches
+  ) -> .
+  setNames(object = ., nm = create_names(name_branches, 1)) -> branches
 
   data.frame(
     world.1 = 1
-  ) -> worlds
+  ) -> .
+  setNames(object = ., nm = create_names(name_worlds, 1)) -> worlds
 
   build_f4(base = base, unary = unary, binary = binary, branches = branches, worlds = worlds)
 
@@ -170,14 +172,22 @@ beta_branches <- function(branches, i){
   df0i <- df0[i,]
   df1i <- df1[i,]
 
-  brandf0 <- data.frame(df0, df1, df1)
-  brandfi0 <- setNames(data.frame(df0i, df1i, 0*df1i), names(brandf0))
-  brandfi1 <- setNames(data.frame(df0i, 0*df1i, df1i), names(brandf0))
+  b_names <- create_names(name_branches, ncol(df0) + 2*ncol(df1))
+
+  brandf0 <- setNames(data.frame(df0, df1, df1), b_names)
+  brandfi0 <- setNames(data.frame(df0i, df1i, 0*df1i), b_names)
+  brandfi1 <- setNames(data.frame(df0i, 0*df1i, df1i), b_names)
 
   rbind(
     brandf0,
     brandfi0,
     brandfi1
   )
+}
+
+create_names <- function(char_, length_){
+
+  paste(names_format["pre"], char_, names_format["middle"], 1:length_, names_format["post"], sep = "")
+
 }
 
